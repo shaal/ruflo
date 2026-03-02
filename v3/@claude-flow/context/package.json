@@ -1,0 +1,51 @@
+{
+  "name": "@claude-flow/context",
+  "version": "3.0.0-alpha.1",
+  "type": "module",
+  "description": "Context Optimization Engine - compression pipeline, FTS5 knowledge base, sandbox isolation, swarm-aware context budgets (ADR-059)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./*": "./dist/*.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "bench": "vitest bench",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "sql.js": "^1.10.3"
+  },
+  "peerDependencies": {
+    "@claude-flow/memory": "^3.0.0-alpha.1",
+    "@claude-flow/hooks": "^3.0.0-alpha.1",
+    "@claude-flow/security": "^3.0.0-alpha.1"
+  },
+  "peerDependenciesMeta": {
+    "@claude-flow/memory": { "optional": true },
+    "@claude-flow/hooks": { "optional": true },
+    "@claude-flow/security": { "optional": true }
+  },
+  "devDependencies": {
+    "@types/sql.js": "^1.4.9",
+    "vitest": "^4.0.16"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "tag": "v3alpha"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}
