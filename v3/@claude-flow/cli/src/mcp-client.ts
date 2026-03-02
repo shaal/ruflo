@@ -35,6 +35,8 @@ import { githubTools } from './mcp-tools/github-tools.js';
 import { daaTools } from './mcp-tools/daa-tools.js';
 import { coordinationTools } from './mcp-tools/coordination-tools.js';
 import { browserTools } from './mcp-tools/browser-tools.js';
+// Context optimization tools (ADR-059)
+import { contextTools } from './mcp-tools/context-tools.js';
 // Phase 6: AgentDB v3 controller tools
 import { agentdbTools } from './mcp-tools/agentdb-tools.js';
 
@@ -77,6 +79,8 @@ registerTools([
   ...daaTools,
   ...coordinationTools,
   ...browserTools,
+  // Context optimization tools (ADR-059)
+  ...contextTools,
   // Phase 6: AgentDB v3 controller tools
   ...agentdbTools,
 ]);

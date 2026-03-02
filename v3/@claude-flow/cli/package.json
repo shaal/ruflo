@@ -101,7 +101,8 @@
     "@ruvector/attention": "^0.1.4",
     "@ruvector/learning-wasm": "^0.1.29",
     "@ruvector/router": "^0.1.27",
-    "@ruvector/sona": "^0.1.5"
+    "@ruvector/sona": "^0.1.5",
+    "@claude-flow/context": "^3.0.0-alpha.1"
   },
   "publishConfig": {
     "access": "public",

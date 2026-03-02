@@ -309,6 +309,7 @@ Bash("npx @claude-flow/cli@latest hooks worker dispatch --trigger optimize")
 | `plugins` | 5 | Plugin management (list, install, uninstall, enable, disable) |
 | `deployment` | 5 | Deployment management (deploy, rollback, status, environments, release) |
 | `embeddings` | 4 | Vector embeddings (embed, batch, search, init) - 75x faster with agentic-flow |
+| `context` | 5 | Context optimization (stats, search, doctor, budget, compress) - ADR-059 |
 | `claims` | 4 | Claims-based authorization (check, grant, revoke, list) |
 | `migrate` | 5 | V2 to V3 migration with rollback support |
 | `doctor` | 1 | System diagnostics with health checks |

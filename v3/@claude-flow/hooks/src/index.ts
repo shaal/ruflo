@@ -94,6 +94,9 @@ export {
   type OfficialHookOutput,
 } from './bridge/official-hooks-bridge.js';
 
+// Context Optimization Hook Bridge (ADR-059)
+export { registerContextHooks } from './bridge/context-bridge.js';
+
 // Swarm Communication
 export {
   SwarmCommunication,
@@ -190,6 +193,12 @@ export async function initializeHooks(options?: {
   const registry = new HookRegistry();
   const executor = new HookExecutor(registry);
   const statusline = new StatuslineGenerator();
+
+  // Register context optimization hooks (ADR-059) if available
+  try {
+    const { registerContextHooks } = await import('./bridge/context-bridge.js');
+    await registerContextHooks(registry);
+  } catch { /* @claude-flow/context not available — skip */ }
 
   // Start daemons if enabled
   if (options?.enableDaemons !== false) {

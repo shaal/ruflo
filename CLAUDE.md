@@ -44,6 +44,7 @@
 | `@claude-flow/hooks` | `v3/@claude-flow/hooks/` | 17 hooks + 12 workers |
 | `@claude-flow/memory` | `v3/@claude-flow/memory/` | AgentDB + HNSW search |
 | `@claude-flow/security` | `v3/@claude-flow/security/` | Input validation, CVE remediation |
+| `@claude-flow/context` | `v3/@claude-flow/context/` | Context optimization, compression, FTS5 search |
 
 ## Concurrency: 1 MESSAGE = ALL RELATED OPERATIONS
 
@@ -364,6 +365,7 @@ This project is configured with Claude Flow V3 (Anti-Drift Defaults):
 | `plugins` | 5 | Plugin management (list, install, uninstall, enable, disable) |
 | `deployment` | 5 | Deployment management (deploy, rollback, status, environments, release) |
 | `embeddings` | 4 | Vector embeddings (embed, batch, search, init) - 75x faster with agentic-flow |
+| `context` | 5 | Context optimization (stats, search, doctor, budget, compress) - ADR-059 |
 | `claims` | 4 | Claims-based authorization (check, grant, revoke, list) |
 | `migrate` | 5 | V2 to V3 migration with rollback support |
 | `process` | 4 | Background process management |
