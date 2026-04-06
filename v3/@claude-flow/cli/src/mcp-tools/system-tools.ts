@@ -233,7 +233,16 @@ export const systemTools: MCPTool[] = [
         },
         agents: agentCounts,
         tasks: taskCounts,
-        // requests: no MCP request tracking infrastructure yet — stays at stored value
+        requests: await (async () => {
+          try {
+            const { getRequestCounts } = await import('./request-tracker.js');
+            const live = getRequestCounts();
+            if (live.total > 0) {
+              return { total: live.total, success: live.success, errors: live.errors };
+            }
+          } catch { /* tracker not available — fall back to stored value */ }
+          return store.requests;
+        })(),
         uptime: Date.now() - new Date(store.startTime).getTime(),
         lastCheck: new Date().toISOString(),
       };

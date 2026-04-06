@@ -127,6 +127,17 @@ export const daaTools: MCPTool[] = [
       store.agents[id] = agent;
       saveDAAStore(store);
 
+      // Store agent in AgentDB for searchable agent registry
+      try {
+        const bridge = await import('../memory/memory-bridge.js');
+        await bridge.bridgeStoreEntry({
+          key: `daa-agent-${id}`,
+          value: JSON.stringify({ id: agent.id, name: agent.name, type: agent.type, cognitivePattern: agent.cognitivePattern }),
+          namespace: 'daa-agents',
+          tags: [agent.type, agent.cognitivePattern],
+        });
+      } catch { /* AgentDB not available */ }
+
       return {
         success: true,
         agent: {
@@ -268,6 +279,20 @@ export const daaTools: MCPTool[] = [
 
       workflow.status = 'running';
       saveDAAStore(store);
+
+      // Store workflow state in AgentDB for tracking
+      try {
+        const bridge = await import('../memory/memory-bridge.js');
+        await bridge.bridgeStoreEntry({
+          key: `workflow-${workflowId}`,
+          value: JSON.stringify({
+            id: workflowId, status: 'running',
+            steps: workflow.steps.length, strategy: workflow.strategy,
+            startedAt: new Date().toISOString(),
+          }),
+          namespace: 'daa-workflows',
+        });
+      } catch { /* AgentDB not available */ }
 
       return {
         success: true,

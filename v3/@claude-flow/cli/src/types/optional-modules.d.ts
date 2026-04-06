@@ -376,3 +376,63 @@ declare module '@xenova/transformers' {
   export const pipeline: any;
   export const env: any;
 }
+
+// Optional @claude-flow sibling packages (installed separately)
+// Using permissive `any` types since these are runtime-resolved optional deps
+declare module '@claude-flow/embeddings' {
+  const mod: any;
+  export default mod;
+  export const createEmbeddingService: any;
+  export const EmbeddingService: any;
+  export const embed: any;
+  export const embedBatch: any;
+  export const search: any;
+  export const init: any;
+  export const downloadEmbeddingModel: any;
+  export const listEmbeddingModels: any;
+  export const chunkText: any;
+  export const euclideanToPoincare: any;
+  export const hyperbolicDistance: any;
+  export const hyperbolicCentroid: any;
+}
+
+declare module '@claude-flow/guidance/compiler' {
+  export const GuidanceCompiler: any;
+  export const compile: any;
+  export const compilePolicy: any;
+}
+
+declare module '@claude-flow/guidance/retriever' {
+  export const ShardRetriever: any;
+  export const HashEmbeddingProvider: any;
+  export const retrieve: any;
+}
+
+declare module '@claude-flow/guidance/gates' {
+  export const EnforcementGates: any;
+  export const enforce: any;
+}
+
+declare module '@claude-flow/guidance/analyzer' {
+  export const formatReport: any;
+  export const optimizeForSize: any;
+  export const formatBenchmark: any;
+  export const abBenchmark: any;
+  export const getDefaultABTasks: any;
+  export const analyze: any;
+}
+
+declare module '@claude-flow/aidefence' {
+  export const createAIDefence: any;
+  export const scan: any;
+  export const analyze: any;
+  export const isSafe: any;
+  export const isSecure: any;
+  export class AIDefence { constructor(...args: any[]); }
+}
+
+declare module '@claude-flow/mcp' {
+  export const createMCPServer: any;
+  export const startMCPServer: any;
+  export class MCPServer { constructor(...args: any[]); }
+}

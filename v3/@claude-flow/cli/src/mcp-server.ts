@@ -26,6 +26,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { trackRequest } from './mcp-tools/request-tracker.js';
 
 // ESM-compatible __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -508,12 +509,14 @@ export class MCPServerManager extends EventEmitter {
 
           try {
             const result = await callMCPTool(toolName, toolParams, { sessionId });
+            trackRequest(toolName, true);
             return {
               jsonrpc: '2.0',
               id: message.id,
               result: { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] },
             };
           } catch (error) {
+            trackRequest(toolName, false);
             return {
               jsonrpc: '2.0',
               id: message.id,

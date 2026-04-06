@@ -697,6 +697,26 @@ export const hiveMindTools: MCPTool[] = [
 
         saveHiveState(state);
 
+        // Persist consensus result in AgentDB for searchable history
+        if (resolved) {
+          try {
+            const bridge = await import('../memory/memory-bridge.js');
+            await bridge.bridgeStoreEntry({
+              key: `consensus-${proposal.proposalId}`,
+              value: JSON.stringify({
+                proposalId: proposal.proposalId,
+                type: proposal.type,
+                strategy: proposalStrategy,
+                status: proposal.status,
+                votes: proposal.votes,
+                resolvedAt: new Date().toISOString(),
+              }),
+              namespace: 'hive-consensus',
+              tags: [proposal.type, proposalStrategy || 'raft', proposal.status],
+            });
+          } catch { /* AgentDB not available — JSON store is primary */ }
+        }
+
         return {
           action,
           proposalId: proposal.proposalId,
@@ -928,6 +948,17 @@ export const hiveMindTools: MCPTool[] = [
         if (!key) return { action, error: 'Key required' };
         state.sharedMemory[key] = input.value;
         saveHiveState(state);
+
+        // Also store in AgentDB for searchable hive memory
+        try {
+          const bridge = await import('../memory/memory-bridge.js');
+          await bridge.bridgeStoreEntry({
+            key: `hive-memory-${key}`,
+            value: JSON.stringify(input.value),
+            namespace: 'hive-memory',
+          });
+        } catch { /* AgentDB not available */ }
+
         return {
           action,
           key,
