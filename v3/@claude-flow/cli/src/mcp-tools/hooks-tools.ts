@@ -829,13 +829,39 @@ export const hooksPostCommand: MCPTool = {
   handler: async (params: Record<string, unknown>) => {
     const command = params.command as string;
     const exitCode = (params.exitCode as number) || 0;
+    const success = exitCode === 0;
+
+    // Persist command outcome via AgentDB
+    let _storedIn: 'agentdb' | 'json-store' | 'none' = 'none';
+    try {
+      const bridge = await import('../memory/memory-bridge.js');
+      await bridge.bridgeStoreEntry({
+        key: `cmd-${Date.now()}`,
+        value: JSON.stringify({ command, exitCode, success }),
+        namespace: 'commands',
+        tags: [success ? 'success' : 'error'],
+      });
+      _storedIn = 'agentdb';
+    } catch {
+      // AgentDB not available — store in JSON
+      try {
+        const store = loadMemoryStore();
+        const key = `cmd-${Date.now()}`;
+        store.entries[key] = { key, value: JSON.stringify({ command, exitCode, success }), namespace: 'commands', createdAt: new Date().toISOString() } as any;
+        const memDir = resolve(MEMORY_DIR);
+        if (!existsSync(memDir)) mkdirSync(memDir, { recursive: true });
+        writeFileSync(getMemoryPath(), JSON.stringify(store, null, 2), 'utf-8');
+        _storedIn = 'json-store';
+      } catch { /* non-critical */ }
+    }
 
     return {
-      recorded: true,
+      recorded: _storedIn !== 'none',
       command,
       exitCode,
-      success: exitCode === 0,
+      success,
       timestamp: new Date().toISOString(),
+      _storedIn,
     };
   },
 };
@@ -1039,8 +1065,8 @@ export const hooksMetrics: MCPTool = {
 
     if (entries.length === 0) {
       return {
-        _stub: true,
-        message: 'No metrics data available. Metrics are collected from hooks_post-task and hooks_route calls.',
+        _real: true,
+        _note: 'No metrics data collected yet. Data populates from hooks_post-task, hooks_post-edit, hooks_post-command, and hooks_route calls.',
         period,
         patterns: { total: 0, successful: 0, failed: 0, avgConfidence: null },
         agents: { routingAccuracy: null, totalRoutes: 0, topAgent: null },
@@ -1407,21 +1433,82 @@ export const hooksPretrain: MCPTool = {
     },
   },
   handler: async (params: Record<string, unknown>) => {
-    const repoPath = (params.path as string) || '.';
+    const repoPath = resolve((params.path as string) || '.');
     const depth = (params.depth as string) || 'medium';
+    const startTime = performance.now();
+
+    // Real file scanning — count files by extension, extract patterns
+    const { readdirSync, statSync } = await import('node:fs');
+    const extCounts: Record<string, number> = {};
+    let filesAnalyzed = 0;
+    let totalLines = 0;
+    const maxDepth = depth === 'shallow' ? 2 : depth === 'deep' ? 6 : 4;
+    const patterns: string[] = [];
+
+    const scan = (dir: string, currentDepth: number) => {
+      if (currentDepth > maxDepth) return;
+      try {
+        const entries = readdirSync(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.name.startsWith('.') || entry.name === 'node_modules' || entry.name === 'dist') continue;
+          const full = join(dir, entry.name);
+          if (entry.isDirectory()) {
+            scan(full, currentDepth + 1);
+          } else if (entry.isFile()) {
+            const ext = entry.name.includes('.') ? entry.name.slice(entry.name.lastIndexOf('.')) : '';
+            if (ext) extCounts[ext] = (extCounts[ext] || 0) + 1;
+            filesAnalyzed++;
+            // For code files, count lines and extract imports
+            if (['.ts', '.js', '.py', '.go', '.rs', '.java'].includes(ext)) {
+              try {
+                const content = readFileSync(full, 'utf-8');
+                const lines = content.split('\n');
+                totalLines += lines.length;
+                // Extract import patterns (first 50 files max for performance)
+                if (filesAnalyzed <= 50) {
+                  for (const line of lines.slice(0, 30)) {
+                    if (line.startsWith('import ') || line.startsWith('from ') || line.startsWith('const ') && line.includes('require(')) {
+                      const trimmed = line.trim();
+                      if (trimmed.length < 120 && !patterns.includes(trimmed)) patterns.push(trimmed);
+                      if (patterns.length >= 100) break;
+                    }
+                  }
+                }
+              } catch { /* skip unreadable */ }
+            }
+          }
+        }
+      } catch { /* skip inaccessible dirs */ }
+    };
+
+    scan(repoPath, 0);
+    const elapsed = Math.round(performance.now() - startTime);
+
+    // Store extracted patterns in AgentDB
+    let patternsStored = 0;
+    try {
+      const bridge = await import('../memory/memory-bridge.js');
+      await bridge.bridgeStoreEntry({
+        key: `pretrain-${Date.now()}`,
+        value: JSON.stringify({ filesAnalyzed, totalLines, topExtensions: Object.entries(extCounts).sort((a, b) => b[1] - a[1]).slice(0, 10), importPatterns: patterns.slice(0, 20) }),
+        namespace: 'pretrain',
+        tags: ['pretrain', depth],
+      });
+      patternsStored = patterns.length;
+    } catch { /* AgentDB not available */ }
 
     return {
       success: true,
-      _stub: true,
-      message: 'Pre-training requires running the pretrain CLI command. This hook provides status only.',
+      _real: true,
       path: repoPath,
       depth,
+      durationMs: elapsed,
       stats: {
-        filesAnalyzed: null,
-        patternsExtracted: null,
-        strategiesLearned: null,
-        trajectoriesEvaluated: null,
-        contradictionsResolved: null,
+        filesAnalyzed,
+        totalLines,
+        patternsExtracted: patterns.length,
+        patternsStored,
+        fileTypes: Object.entries(extCounts).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([ext, count]) => ({ ext, count })),
       },
     };
   },
