@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1280, initial-scale=1" />
+  <title>RuVector Self-Learning AI Racing Demo</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>
+      <span class="logo">Ru<span class="logo-accent">Vector</span></span>
+      Self-Learning AI Racing Demo
+    </h1>
+    <p class="tagline">Watch AgentMemory + SONA + GNN learn to race in real time</p>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <canvas id="scene" width="1024" height="576"></canvas>
+
+      <div class="controls">
+        <button id="btn-start" class="primary">Start Training</button>
+        <button id="btn-pause">Pause</button>
+        <button id="btn-reset">Reset Memory</button>
+        <button id="btn-manual">Manual Drive: off</button>
+        <button id="btn-track">New Track</button>
+        <label class="toggle">
+          <input id="chk-overlays" type="checkbox" checked />
+          <span>Overlays</span>
+        </label>
+        <label class="toggle">
+          <input id="chk-heatmap" type="checkbox" />
+          <span>Crash heatmap</span>
+        </label>
+      </div>
+
+      <div class="sliders">
+        <label>
+          AI cars: <output id="out-cars">4</output>
+          <input id="sl-cars" type="range" min="1" max="8" value="4" />
+        </label>
+        <label>
+          Exploration (ε): <output id="out-epsilon">0.25</output>
+          <input id="sl-epsilon" type="range" min="0" max="1" step="0.01" value="0.25" />
+        </label>
+        <label>
+          Speed reward: <output id="out-speed">1.0</output>
+          <input id="sl-speed" type="range" min="0" max="3" step="0.05" value="1.0" />
+        </label>
+        <label>
+          Crash penalty: <output id="out-crash">5.0</output>
+          <input id="sl-crash" type="range" min="0" max="20" step="0.5" value="5.0" />
+        </label>
+      </div>
+    </section>
+
+    <aside class="dashboard">
+      <h2>AgentMemory</h2>
+      <div id="panel-memory" class="panel"></div>
+
+      <h2>Intelligence pipeline</h2>
+      <div id="panel-pipeline" class="panel"></div>
+
+      <h2>Reward &amp; laps</h2>
+      <canvas id="chart-reward" width="320" height="140"></canvas>
+
+      <h2>Cars</h2>
+      <div id="panel-cars" class="panel cars"></div>
+
+      <footer class="hint">
+        <p>Manual drive: arrow keys (also generates experiences for AgentMemory)</p>
+        <p>State persists in <code>localStorage</code> under <code>ruvector-racer</code></p>
+      </footer>
+    </aside>
+  </main>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
